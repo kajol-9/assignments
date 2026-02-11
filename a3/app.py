@@ -3,7 +3,7 @@ import asyncio
 from client import get_all_data
 
 st.set_page_config(page_title="Concurrent API Aggregator", layout="wide")
-st.title("🚀 Async API Aggregator")
+st.title("Async API Aggregator")
 
 st.sidebar.header("Settings")
 timeout = st.sidebar.slider("Timeout per API (seconds)", 0.5, 5.0, 2.0)
@@ -23,5 +23,6 @@ if st.button("Fetch Data from 10 APIs"):
                 st.error(f"API {res['api_id']}: {res['error']}")
             else:
                 st.success(f"API {res['api_id']}: {res['data']}")
+
 
 st.info("Note: Ensure server.py is running on localhost:8080")
