@@ -43,7 +43,7 @@ def login(
         raise HTTPException(status_code=401, detail="invalid credentials")
 
     token = create_access_token({
-        "sub": str(user.id),   # ⚠️ JWT should store string
+        "sub": str(user.id),   # JWT should store string
         "role": user.role
     })
 
