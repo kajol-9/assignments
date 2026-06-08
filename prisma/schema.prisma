@@ -1,0 +1,104 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Book {
+  id              String   @id @default(cuid())
+  title           String
+  author          String
+  isbn            String   @unique
+  category        String
+  publisher       String
+  year            Int
+  totalCopies     Int      @default(1)
+  availableCopies Int      @default(1)
+  description     String?
+  coverImage      String?
+  language        String   @default("English")
+  pages           Int?
+  location        String?
+  loans           Loan[]
+  holds           Hold[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([title])
+  @@index([author])
+  @@index([category])
+  @@index([isbn])
+}
+
+model Member {
+  id           String       @id @default(cuid())
+  name         String
+  email        String       @unique
+  studentId    String       @unique
+  department   String
+  phone        String?
+  membershipId String       @unique
+  passwordHash String
+  role         Role         @default(MEMBER)
+  status       MemberStatus @default(PENDING)
+  joinedAt     DateTime     @default(now())
+  expiresAt    DateTime
+  loans        Loan[]
+  holds        Hold[]
+  sessions     Session[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
+model Loan {
+  id          String     @id @default(cuid())
+  memberId    String
+  bookId      String
+  issuedAt    DateTime   @default(now())
+  dueDate     DateTime
+  returnedAt  DateTime?
+  renewed     Boolean    @default(false)
+  status      LoanStatus @default(ACTIVE)
+  member      Member     @relation(fields: [memberId], references: [id])
+  book        Book       @relation(fields: [bookId], references: [id])
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([memberId])
+  @@index([bookId])
+  @@index([status])
+}
+
+model Hold {
+  id          String     @id @default(cuid())
+  memberId    String
+  bookId      String
+  position    Int        @default(1)
+  requestedAt DateTime   @default(now())
+  expiresAt   DateTime?
+  status      HoldStatus @default(WAITING)
+  member      Member     @relation(fields: [memberId], references: [id])
+  book        Book       @relation(fields: [bookId], references: [id])
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@unique([memberId, bookId])
+  @@index([memberId])
+  @@index([bookId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  memberId     String
+  expires      DateTime
+  member       Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+}
+
+enum Role         { MEMBER ADMIN }
+enum MemberStatus { PENDING ACTIVE EXPIRED SUSPENDED }
+enum LoanStatus   { ACTIVE RETURNED OVERDUE }
+enum HoldStatus   { WAITING READY EXPIRED }
